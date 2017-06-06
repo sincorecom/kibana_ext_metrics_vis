@@ -2,6 +2,7 @@ import _ from 'lodash';
 import AggResponseTabifyTabifyProvider from 'ui/agg_response/tabify/tabify';
 import uiModules from 'ui/modules';
 const module = uiModules.get('kibana/extended_metric_vis', ['kibana']);
+const numeral = require('numeral');
 
 module.controller('KbnExtendedMetricVisController', function ($scope, Private) {
   const tabifyAggResponse = Private(AggResponseTabifyTabifyProvider);
@@ -13,10 +14,21 @@ module.controller('KbnExtendedMetricVisController', function ($scope, Private) {
   }
 
   function updateOutputs() {
+    // var precision = Math.pow(10, $scope.vis.params.decimal);
+
     $scope.vis.params.outputs.forEach(function (output) {
+
       try {
         const func = Function("metrics", "return " + output.formula);
         output.value = func(metrics) || "?";
+//        if(output.value!="?" && ($scope.vis.params.decimal!==null)) {
+        //        output.value = Math.round(output.value*(precision))/precision;
+        //    }
+
+        if(output.value!="?" && (output.format!==null)) {
+          var number = numeral(output.value);
+          output.value = number.format(output.format);
+        }
       } catch (e) {
         output.value = '?';
       }
